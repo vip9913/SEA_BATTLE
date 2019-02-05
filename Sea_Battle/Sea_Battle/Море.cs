@@ -28,7 +28,7 @@ namespace Sea_Battle
         Сброс();
     }
        
-    private void Сброс()
+    public void Сброс()
     {
         for (int x = 0; x < размер_моря.x; x++)
             for (int y = 0; y < размер_моря.y; y++)
