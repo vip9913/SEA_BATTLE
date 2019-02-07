@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Sea_Battle
-{   
+{
+
     public partial class Form1 : Form
     {
         //Море sea_user = new Море();
@@ -24,7 +19,13 @@ namespace Sea_Battle
                               Color.DarkGreen,Color.DarkGreen,
                               Color.DarkViolet,Color.DarkViolet,Color.DarkViolet,
                               Color.DarkRed,Color.DarkRed,Color.DarkRed,Color.DarkRed };
-        
+
+        Color[] color_fight = {
+                              Color.DarkSeaGreen,
+                              Color.SeaGreen,
+                              Color.Orange,
+                              Color.Red,
+                              Color.Red};              
 
         public Form1()
         {
@@ -32,10 +33,15 @@ namespace Sea_Battle
             //sea_user = new Море();
             //sea_pc = new Море();
             sea_user = new Редактор();
-            sea_pc = new Редактор();
+            sea_user.ShowShip = ShowUserShip;//инициализация делегатов
+            sea_user.ShowFight = ShowUserFight;
 
-            InitGrid(Grid_user);
-            InitGrid(Grid_pc);
+            sea_pc = new Редактор();
+            sea_pc.ShowShip = ShowPcShip;
+            sea_pc.ShowFight = ShowPcFight;
+
+            InitGrid(grid_user);
+            InitGrid(grid_pc);
         }
 
         private void InitGrid(DataGridView grid)
@@ -56,17 +62,17 @@ namespace Sea_Battle
             grid.ClearSelection();//что бы ничего не отмечалось на сетке
         }
 
-        private void ShowShips(DataGridView grid, Море sea)//перерисовываем картинку
-        {
-            for (int x = 0; x < Море.размер_моря.x; x++)
-                for (int y = 0; y < Море.размер_моря.y; y++)
-                {
-                    int nr = sea.КартаКораблей(new Точка(x, y));
-                    if (nr < 0)
-                        grid[x, y].Style.BackColor = color_back;
-                    else grid[x, y].Style.BackColor = color_ship[nr];
-                }            
-        }
+        //private void ShowShips(DataGridView grid, Редактор sea)//перерисовываем картинку
+        //{
+        //    for (int x = 0; x < Море.размер_моря.x; x++)
+        //        for (int y = 0; y < Море.размер_моря.y; y++)
+        //        {
+        //            int nr = sea.КартаКораблей(new Точка(x, y));
+        //            if (nr < 0)
+        //                grid[x, y].Style.BackColor = color_back;
+        //            else grid[x, y].Style.BackColor = color_ship[nr];
+        //        }            
+        //}
 
         private void Form1_Load(object sender, EventArgs e)
         {          
@@ -93,15 +99,24 @@ namespace Sea_Battle
 
         private void button1_Click(object sender, EventArgs e)
         {
-            sea_user.Сброс();
-            sea_user.ПоставитьРовно();
+            sea_user.Выстрел(new Точка(0,0));
+            //ShowShip(grid_user, new Точка(2, 5), 4);
+            //ShowFight(grid_pc, new Точка(2, 5), Статус.ранил);
+            //ShowFight(grid_pc, new Точка(2, 4), Статус.победил);
+            return;
+
+            //sea_user.Сброс();
+            //sea_user.ПоставитьРовно();
+
             //sea_user.ПоставитьКорабль(0,
             //    new Точка[]{
             //    new Точка(1,1),
             //    new Точка(1,2),
             //    new Точка(1,3),
             //    new Точка(1,4) });
-            ShowShips(Grid_user, sea_user);
+
+            //ShowShips(Grid_user, sea_user);
+           
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -115,7 +130,7 @@ namespace Sea_Battle
                     sea_user.ПоставитьСлучайно(nr);
             }
             if (sea_user.создано < Море.всего_кораблей) sea_user.Сброс();
-            ShowShips(Grid_user, sea_user);
+          //  ShowShips(grid_user, sea_user);
         }
 
         //private void ShowSea()
@@ -147,5 +162,38 @@ namespace Sea_Battle
         //        }
         //    textBox2.Text = text;
         //}
+
+        private void ShowShip(DataGridView grid, Точка place, int nr) //отображение кораблей на сетках
+        {
+            if (nr < 0) grid[place.x, place.y].Style.BackColor = color_back;
+            else grid[place.x, place.y].Style.BackColor = color_ship[nr];
+        }
+
+        private void ShowFight(DataGridView grid, Точка place, Статус status) //отображение кораблей на сетках
+        {
+            grid[place.x, place.y].Style.BackColor = color_fight[(int)status];           
+        }
+
+
+        //претенденты на делегатов в другие классы
+        private void ShowUserShip(Точка place, int nr)
+        {
+            ShowShip(grid_user, place, nr);
+        }
+
+        private void ShowPcShip(Точка place, int nr)
+        {
+            ShowShip(grid_pc, place, nr);
+        }
+
+        private void ShowUserFight(Точка place, Статус status)
+        {
+            ShowFight(grid_user, place, status);
+        }
+
+        private void ShowPcFight(Точка place, Статус status)
+        {
+            ShowFight(grid_pc, place, status);
+        }
     }
 }
