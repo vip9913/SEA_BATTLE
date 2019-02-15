@@ -9,8 +9,9 @@ namespace Sea_Battle
     {
         //Море sea_user = new Море();
         //Море sea_pc = new Море();
-        Редактор sea_user;
+        
         Редактор sea_pc;
+        Редактор sea_user;
 
         static string abc = "РЕСПУБЛИКА";//"АБВГДЕЖЗИКЛМНОПРСТУФХЧШЩЫЮЯ";
         Color color_back = Color.DarkSeaGreen; //цвет фона
@@ -32,6 +33,7 @@ namespace Sea_Battle
             InitializeComponent();
             //sea_user = new Море();
             //sea_pc = new Море();
+            
             sea_user = new Редактор();
             sea_user.ShowShip = ShowUserShip;//инициализация делегатов
             sea_user.ShowFight = ShowUserFight;
@@ -42,6 +44,10 @@ namespace Sea_Battle
 
             InitGrid(grid_user);
             InitGrid(grid_pc);
+
+            sea_user.Сброс();
+            sea_pc.Сброс();
+            sea_pc.ПоставитьРовно();
         }
 
         private void InitGrid(DataGridView grid)
@@ -100,6 +106,7 @@ namespace Sea_Battle
         private void button1_Click(object sender, EventArgs e)
         {
             sea_user.Выстрел(new Точка(0,0));
+            
             //ShowShip(grid_user, new Точка(2, 5), 4);
             //ShowFight(grid_pc, new Точка(2, 5), Статус.ранил);
             //ShowFight(grid_pc, new Точка(2, 4), Статус.победил);
@@ -115,8 +122,7 @@ namespace Sea_Battle
             //    new Точка(1,3),
             //    new Точка(1,4) });
 
-            //ShowShips(Grid_user, sea_user);
-           
+            //ShowShips(Grid_user, sea_user);           
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -194,6 +200,48 @@ namespace Sea_Battle
         private void ShowPcFight(Точка place, Статус status)
         {
             ShowFight(grid_pc, place, status);
+        }
+
+        private void grid_user_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button==MouseButtons.Left) PlaceShip();
+        }
+
+        /// <summary>
+        /// отрисовка ручками кораблей
+        /// </summary>
+        private void PlaceShip()
+        {
+            if (grid_user.SelectedCells.Count == 0 || grid_user.SelectedCells.Count>4) return;
+            Точка[] ship = new Точка[(grid_user.SelectedCells.Count)];//массив точек будущего корабля
+            int i = 0;
+            foreach (DataGridViewCell cell in grid_user.SelectedCells)            
+                ship[i++] = new Точка(cell.ColumnIndex, cell.RowIndex);                
+            
+            if (ship.Length == 1) sea_user.ОчиститьТочку(ship[0]);
+            sea_user.ПоставитьПоТочкам(ship);
+            grid_user.ClearSelection();
+            ShowUnPlacedShips();//показать неразмещенные корабли
+        }
+
+
+        /// <summary>
+        /// визуализация. Убираем те корабли которые уже не нужно ставить
+        /// </summary>
+        private void ShowUnPlacedShips()
+        {
+            sea_pc.ПоставитьРовно();
+            for (int i = 0; i < Море.всего_кораблей; i++)
+            {
+                if (!sea_user.НетКорабля(i)) sea_pc.УбратьКорабль(i);
+            }
+        }
+
+        //расстановка с клавиатуры
+        private void grid_user_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+                PlaceShip();
         }
     }
 }

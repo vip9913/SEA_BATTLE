@@ -95,6 +95,8 @@
             this.grid_user.ShowRowErrors = false;
             this.grid_user.Size = new System.Drawing.Size(275, 256);
             this.grid_user.TabIndex = 4;
+            this.grid_user.KeyDown += new System.Windows.Forms.KeyEventHandler(this.grid_user_KeyDown);
+            this.grid_user.MouseUp += new System.Windows.Forms.MouseEventHandler(this.grid_user_MouseUp);
             // 
             // grid_pc
             // 
