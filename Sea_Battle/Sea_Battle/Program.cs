@@ -36,5 +36,7 @@ namespace Sea_Battle
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
         }
+
+
     }
 }
