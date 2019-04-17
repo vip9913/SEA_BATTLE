@@ -72,17 +72,39 @@ namespace Sea_Battle
                     modeDanger = true;   break;
                 case Статус.убил: 
                 case Статус.победил: map[target.x, target.y] = 2;
-                    int len = markKilledShip(targer); //если попали в корабль
+                    int len = markKilledShip(target); //если попали в корабль
                     shipLength[len]--;//уменьшаем его длину
-                    modeDanger = false;  break;
+                    modeDanger = false;                   
+                    break;
 
             }
             //return sea.Выстрел(target);
             return status;
         }
 
+        /// <summary>
+        /// помечает убитые корабли
+        /// </summary>
+        /// <param name="place"></param>
+        /// <returns></returns>
         private int markKilledShip(Точка place)
         {
+            if (!sea.НаМоре(place)) return 0;
+            if (map[place.x, place.y] == 2)
+            {
+                map[place.x, place.y] = 3;//убитая
+                int x, y;
+                for (x = place.x - 1; x <= place.x + 1; x++)
+                    for (y = place.y - 1; y <= place.x + 1; y++)
+                        if (Map(x, y) == 0) map[x, y] = 1;//помечаем что стреляли
+                int length = 1;
+                //рекурсивно пройдемся по точкам
+                length += markKilledShip(new Точка(place.x-1,place.y));
+                length += markKilledShip(new Точка(place.x + 1, place.y));
+                length += markKilledShip(new Точка(place.x, place.y-1));
+                length += markKilledShip(new Точка(place.x, place.y+1));
+                return length;
+            }
             return 0;
         }
 
@@ -124,11 +146,82 @@ namespace Sea_Battle
                     put[x, y] = 0;
         }
 
+        /// <summary>
+        /// стреляем по кораблю ИИ
+        /// </summary>
+        /// <returns></returns>
         private Точка FightDanger()
         {
-            return new Точка(0,0);
+            // return new Точка(0,0);
+            InitPut();
+            for (int x = 0; x < Море.размер_моря.x; x++)
+                for (int y = 0; y < Море.размер_моря.y; y++)
+                    if (map[x, y] == 2) //если ранен ищем
+                    {
+                        Точка ship = new Точка(x,y); //идем вврх вниз
+                        for (int length = 2; length < shipLength.Length; length++) //берем корабль и начинаем мочить в разные стороны в зависимости от того какие корабли остались
+                        {
+                            if (shipLength[length] > 0)
+                            {
+                                CheckShipDirection(ship, -1, 0, length);
+                                CheckShipDirection(ship, 1, 0, length);
+                                CheckShipDirection(ship, 0, -1, length);
+                                CheckShipDirection(ship, 0, 1, length);
+                            }
+                        }
+                    }
+                    return RandomPut();
         }
 
+        /// <summary>
+        /// проверка направления бомбандировки
+        /// </summary>
+        /// <param name="ship"></param>
+        /// <param name="sx"></param>
+        /// <param name="sy"></param>
+        /// <param name="length"></param>
+        private void CheckShipDirection(Точка ship, int sx, int sy, int length)
+        //проверить клетки в указанном направлении
+        { 
+            //текущая клетка должна быть ранен
+            if (Map(ship.x, ship.y) != 2) return;//не ранен
+            //в остальных напралениях не должно быть раненных клеток
+            if (Map(ship.x - sx, ship.y - sy) == 2) return;//за пределами
+            if (sx == 0) //перемещение по x
+            {
+                if (Map(ship.x - 1, ship.y) == 2) return;
+                if (Map(ship.x + 1, ship.y) == 2) return;
+            }
+            if (sy == 0) //перемещение по y
+            {
+                if (Map(ship.x, ship.y-1) == 2) return;
+                if (Map(ship.x, ship.y+1) == 2) return;
+            }
+            //в выбранном направлении не должно быть клеток МИМО
+            //в указанном напралении должна быть хотя бы одна клетка неизвестна
+            //может быть клетка ранен
+            int unknown = 0;
+            int unknown_i = 0;
+            for (int i = 1; i < length; i++)
+            {
+                int p = Map(ship.x + i * sx, ship.y + i * sy);
+                if (p == 1) return;
+                if (p ==-1) return;
+
+                if (p == 0)
+                {
+                    unknown++;
+                    if (unknown == 1) unknown_i = i;                       
+                }
+            }
+            if (unknown>=1) put[ship.x + unknown_i * sx, ship.y + unknown_i * sy]++;//нашли неизвестную клетку
+        }
+
+        private int Map(int x, int y)
+        {
+            if (sea.НаМоре(new Точка(x, y))) return map[x,y];
+            return -1;
+        }
 
         /// <summary>
         /// вспомогательная функция для отображения как работает алгоритм матрицы
