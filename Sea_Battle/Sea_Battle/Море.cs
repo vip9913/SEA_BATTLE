@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Sea_Battle
+﻿namespace Sea_Battle
 {
     public delegate void deShowShip(Точка place, int nr); //делегат
     public delegate void deShowFight(Точка place, Статус status);

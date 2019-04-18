@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sea_Battle
 {
@@ -89,6 +85,21 @@ namespace Sea_Battle
             ПоставитьКорабль(номер, палуба);
             return true;
         }
+
+        public void ПоставитьСлучайно()
+        {
+            Сброс();
+            int loop = 100;//клапан для блокировки зацикливания размещения
+            while (--loop > 0 && создано < Море.всего_кораблей)
+            {
+                for (int nr = 0; nr < Море.всего_кораблей; nr++)
+                    if (НетКорабля(nr))
+                        ПоставитьСлучайно(nr);
+            }
+            if (создано < Море.всего_кораблей) Сброс();
+        }
+
+
 
         public void ОчиститьТочку(Точка t)
         {

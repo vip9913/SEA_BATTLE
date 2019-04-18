@@ -1,5 +1,4 @@
 C:\Users\vip\Desktop\My_Programming\!Student_Videosharp\Морской бой\Sea_Battle\Sea_Battle\bin\Debug\Sea_Battle.exe.config
-C:\Users\vip\Desktop\My_Programming\!Student_Videosharp\Морской бой\Sea_Battle\Sea_Battle\obj\Debug\Sea_Battle.Form1.resources
 C:\Users\vip\Desktop\My_Programming\!Student_Videosharp\Морской бой\Sea_Battle\Sea_Battle\obj\Debug\Sea_Battle.Properties.Resources.resources
 C:\Users\vip\Desktop\My_Programming\!Student_Videosharp\Морской бой\Sea_Battle\Sea_Battle\obj\Debug\Sea_Battle.csproj.GenerateResource.Cache
 C:\Users\vip\Desktop\My_Programming\!Student_Videosharp\Морской бой\Sea_Battle\Sea_Battle\bin\Debug\Sea_Battle.exe
@@ -7,3 +6,4 @@ C:\Users\vip\Desktop\My_Programming\!Student_Videosharp\Морской бой\Se
 C:\Users\vip\Desktop\My_Programming\!Student_Videosharp\Морской бой\Sea_Battle\Sea_Battle\obj\Debug\Sea_Battle.exe
 C:\Users\vip\Desktop\My_Programming\!Student_Videosharp\Морской бой\Sea_Battle\Sea_Battle\obj\Debug\Sea_Battle.pdb
 C:\Users\vip\Desktop\My_Programming\!Student_Videosharp\Морской бой\Sea_Battle\Sea_Battle\obj\Debug\Sea_Battle.csprojResolveAssemblyReference.cache
+C:\Users\vip\Desktop\My_Programming\!Student_Videosharp\Морской бой\Sea_Battle\Sea_Battle\obj\Debug\Sea_Battle.FormGame.resources

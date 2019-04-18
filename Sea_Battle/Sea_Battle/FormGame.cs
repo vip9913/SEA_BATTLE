@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Drawing;
 using System.Windows.Forms;
 
 namespace Sea_Battle
 {
 
-    public partial class Form1 : Form
+    public partial class FormGame : Form
     {
         //Море sea_user = new Море();
         //Море sea_pc = new Море();
@@ -13,22 +12,20 @@ namespace Sea_Battle
         Редактор sea_pc;
         Редактор sea_user;
 
-        static string abc = "РЕСПУБЛИКА";//"АБВГДЕЖЗИКЛМНОПРСТУФХЧШЩЫЮЯ";
-        Color color_back = Color.DarkSeaGreen; //цвет фона
-        Color[] color_ship = {
-                              Color.DarkOrange,
-                              Color.DarkGreen,Color.DarkGreen,
-                              Color.DarkViolet,Color.DarkViolet,Color.DarkViolet,
-                              Color.DarkRed,Color.DarkRed,Color.DarkRed,Color.DarkRed };
+        SeaGrid GridUser;
+        SeaGrid GridComp;
 
-        Color[] color_fight = {
-                              Color.DarkSeaGreen,
-                              Color.SeaGreen,
-                              Color.Orange,
-                              Color.Red,
-                              Color.Red};              
+        enum Mode //режимы игры
+        {
+            EditShips,
+            PlayUser,
+            PlayComp,
+            Finish
+        };
 
-        public Form1()
+        Mode mode;
+
+        public FormGame()
         {
             InitializeComponent();
             //sea_user = new Море();
@@ -42,30 +39,26 @@ namespace Sea_Battle
             sea_pc.ShowShip = ShowPcShip;
             sea_pc.ShowFight = ShowPcFight;
 
-            InitGrid(grid_user);
-            InitGrid(grid_pc);
+            GridUser = new SeaGrid(grid_user);
+            GridComp = new SeaGrid(grid_pc);
 
+            // InitGrid(grid_user);
+            // InitGrid(grid_pc);
+
+            Restart();           
+        }
+
+
+        private void Restart()
+        {
+            mode = Mode.EditShips;
             sea_user.Сброс();
             sea_pc.Сброс();
             sea_pc.ПоставитьРовно();
-        }
-
-        private void InitGrid(DataGridView grid)
-        {
-            grid.Rows.Clear();
-            grid.Columns.Clear();
-            grid.DefaultCellStyle.BackColor = color_back;
-            for (int x = 0; x < Море.размер_моря.x; x++)
-            {
-                grid.Columns.Add("col_" + x.ToString(), abc.Substring(x, 1));
-            }
-            for (int y = 0; y < Море.размер_моря.y; y++)
-            {
-                grid.Rows.Add();
-                grid.Rows[y].HeaderCell.Value = (y+1).ToString();
-            }
-            grid.Height = Море.размер_моря.y * grid.Rows[0].Height + grid.ColumnHeadersHeight + 2;
-            grid.ClearSelection();//что бы ничего не отмечалось на сетке
+            ShowUnPlacedShips();
+            bt_Random.Visible = true;
+            bt_Clear.Visible = true;
+            bt_Start.Visible = true;
         }
 
         //private void ShowShips(DataGridView grid, Редактор sea)//перерисовываем картинку
@@ -127,16 +120,19 @@ namespace Sea_Battle
 
         private void button2_Click(object sender, EventArgs e)
         {
-            sea_user.Сброс();
-            int loop = 100;//клапан для блокировки зацикливания размещения
-            while (--loop>0 && sea_user.создано < Море.всего_кораблей)
-            {
-                for (int nr = 0; nr < Море.всего_кораблей; nr++)
-                    if (sea_user.НетКорабля(nr))
-                    sea_user.ПоставитьСлучайно(nr);
-            }
-            if (sea_user.создано < Море.всего_кораблей) sea_user.Сброс();
-          //  ShowShips(grid_user, sea_user);
+
+            sea_user.ПоставитьСлучайно();
+            ShowUnPlacedShips();
+            //sea_user.Сброс();
+            //int loop = 100;//клапан для блокировки зацикливания размещения
+            //while (--loop>0 && sea_user.создано < Море.всего_кораблей)
+            //{
+            //    for (int nr = 0; nr < Море.всего_кораблей; nr++)
+            //        if (sea_user.НетКорабля(nr))
+            //        sea_user.ПоставитьСлучайно(nr);
+            //}
+            //if (sea_user.создано < Море.всего_кораблей) sea_user.Сброс();
+            //  ShowShips(grid_user, sea_user);
         }
 
         //private void ShowSea()
@@ -169,37 +165,31 @@ namespace Sea_Battle
         //    textBox2.Text = text;
         //}
 
-        private void ShowShip(DataGridView grid, Точка place, int nr) //отображение кораблей на сетках
-        {
-            if (nr < 0) grid[place.x, place.y].Style.BackColor = color_back;
-            else grid[place.x, place.y].Style.BackColor = color_ship[nr];
-        }
-
-        private void ShowFight(DataGridView grid, Точка place, Статус status) //отображение кораблей на сетках
-        {
-            grid[place.x, place.y].Style.BackColor = color_fight[(int)status];           
-        }
+     
 
 
         //претенденты на делегатов в другие классы
         private void ShowUserShip(Точка place, int nr)
         {
-            ShowShip(grid_user, place, nr);
+           GridUser.ShowShip(place, nr);
         }
 
         private void ShowPcShip(Точка place, int nr)
         {
-            ShowShip(grid_pc, place, nr);
+            //ShowShip(grid_pc, place, nr);
+            GridComp.ShowShip(place, nr);
         }
 
         private void ShowUserFight(Точка place, Статус status)
         {
-            ShowFight(grid_user, place, status);
+            //ShowFight(grid_user, place, status);
+            GridUser.ShowFight(place, status);
         }
 
         private void ShowPcFight(Точка place, Статус status)
         {
-            ShowFight(grid_pc, place, status);
+            //ShowFight(grid_pc, place, status);
+            GridComp.ShowFight(place, status);
         }
 
         private void grid_user_MouseUp(object sender, MouseEventArgs e)
@@ -212,15 +202,20 @@ namespace Sea_Battle
         /// </summary>
         private void PlaceShip()
         {
-            if (grid_user.SelectedCells.Count == 0 || grid_user.SelectedCells.Count>4) return;
-            Точка[] ship = new Точка[(grid_user.SelectedCells.Count)];//массив точек будущего корабля
-            int i = 0;
-            foreach (DataGridViewCell cell in grid_user.SelectedCells)            
-                ship[i++] = new Точка(cell.ColumnIndex, cell.RowIndex);                
-            
+            //if (grid_user.SelectedCells.Count == 0 || grid_user.SelectedCells.Count>4) return;
+            //Точка[] ship = new Точка[(grid_user.SelectedCells.Count)];//массив точек будущего корабля
+            //int i = 0;
+            //foreach (DataGridViewCell cell in grid_user.SelectedCells)            
+            //    ship[i++] = new Точка(cell.ColumnIndex, cell.RowIndex);                
+
+            //if (ship.Length == 1) sea_user.ОчиститьТочку(ship[0]);
+            //sea_user.ПоставитьПоТочкам(ship);
+            //grid_user.ClearSelection();
+
+            Точка[] ship= GridUser.GetSelectedCells();
+            if (ship == null) return;
             if (ship.Length == 1) sea_user.ОчиститьТочку(ship[0]);
             sea_user.ПоставитьПоТочкам(ship);
-            grid_user.ClearSelection();
             ShowUnPlacedShips();//показать неразмещенные корабли
         }
 
@@ -235,6 +230,7 @@ namespace Sea_Battle
             {
                 if (!sea_user.НетКорабля(i)) sea_pc.УбратьКорабль(i);
             }
+            bt_Start.Enabled = (sea_user.создано == Море.всего_кораблей);
         }
 
         //расстановка с клавиатуры
@@ -242,6 +238,46 @@ namespace Sea_Battle
         {
             if (e.KeyCode == Keys.Enter)
                 PlaceShip();
+        }
+
+        private void FormGame_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+
+            }
+        }
+
+        private void bt_Random_Click(object sender, EventArgs e)
+        {
+            if (mode != Mode.EditShips) return;
+               sea_user.ПоставитьСлучайно();
+               ShowUnPlacedShips();            
+        }
+
+        private void bt_Clear_Click(object sender, EventArgs e)
+        {
+            if (mode != Mode.EditShips) return;
+            sea_user.Сброс();
+            ShowUnPlacedShips();
+        }
+
+        private void bt_Restart_Click(object sender, EventArgs e)
+        {
+            Restart();
+        }
+
+        private void bt_Start_Click(object sender, EventArgs e)
+        {
+            if (mode != Mode.EditShips) return;
+            if (sea_user.создано == Море.всего_кораблей)
+            {
+                mode = Mode.PlayUser;
+                sea_pc.ПоставитьСлучайно();
+                bt_Random.Visible = false;
+                bt_Clear.Visible = false;
+                bt_Start.Visible = false;
+            }
         }
     }
 }

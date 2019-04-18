@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sea_Battle
 {
@@ -158,15 +154,17 @@ namespace Sea_Battle
                 for (int y = 0; y < Море.размер_моря.y; y++)
                     if (map[x, y] == 2) //если ранен ищем
                     {
+                        bool longer = false;
                         Точка ship = new Точка(x,y); //идем вврх вниз
-                        for (int length = 2; length < shipLength.Length; length++) //берем корабль и начинаем мочить в разные стороны в зависимости от того какие корабли остались
+                        for (int length = shipLength.Length-1; length >=2; length--) //берем корабль и начинаем мочить в разные стороны в зависимости от того какие корабли остались
                         {
-                            if (shipLength[length] > 0)
+                            if (longer || shipLength[length] > 0)
                             {
                                 CheckShipDirection(ship, -1, 0, length);
                                 CheckShipDirection(ship, 1, 0, length);
                                 CheckShipDirection(ship, 0, -1, length);
                                 CheckShipDirection(ship, 0, 1, length);
+                                longer = true;
                             }
                         }
                     }
