@@ -15,6 +15,9 @@ namespace Sea_Battle
         SeaGrid GridUser;
         SeaGrid GridComp;
 
+
+        Mission mission; //добавление класса ИИ компьютер
+
         enum Mode //режимы игры
         {
             EditShips,
@@ -45,7 +48,8 @@ namespace Sea_Battle
             // InitGrid(grid_user);
             // InitGrid(grid_pc);
 
-            Restart();           
+            Restart();
+            timer1.Enabled = true;//для ходов компьютера        
         }
 
 
@@ -174,10 +178,15 @@ namespace Sea_Battle
            GridUser.ShowShip(place, nr);
         }
 
+        /// <summary>
+        /// показывать корабли противника и показывать корабли в режиме редактирования сколько их осталось не установлено
+        /// </summary>
+        /// <param name="place"></param>
+        /// <param name="nr"></param>
         private void ShowPcShip(Точка place, int nr)
         {
             //ShowShip(grid_pc, place, nr);
-            GridComp.ShowShip(place, nr);
+            if (mode==Mode.EditShips)  GridComp.ShowShip(place, nr);
         }
 
         private void ShowUserFight(Точка place, Статус status)
@@ -193,8 +202,9 @@ namespace Sea_Battle
         }
 
         private void grid_user_MouseUp(object sender, MouseEventArgs e)
-        {
+        {           
             if (e.Button==MouseButtons.Left) PlaceShip();
+            grid_user.ClearSelection();
         }
 
         /// <summary>
@@ -212,6 +222,7 @@ namespace Sea_Battle
             //sea_user.ПоставитьПоТочкам(ship);
             //grid_user.ClearSelection();
 
+            if (mode != Mode.EditShips) return;
             Точка[] ship= GridUser.GetSelectedCells();
             if (ship == null) return;
             if (ship.Length == 1) sea_user.ОчиститьТочку(ship[0]);
@@ -238,13 +249,14 @@ namespace Sea_Battle
         {
             if (e.KeyCode == Keys.Enter)
                 PlaceShip();
+            grid_user.ClearSelection();
         }
 
         private void FormGame_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            if (e.Button == MouseButtons.Right)
             {
-
+                //ShowPcShip();
             }
         }
 
@@ -274,10 +286,67 @@ namespace Sea_Battle
             {
                 mode = Mode.PlayUser;
                 sea_pc.ПоставитьСлучайно();
+                mission = new Mission(sea_user);                                
                 bt_Random.Visible = false;
                 bt_Clear.Visible = false;
                 bt_Start.Visible = false;
             }
+        }
+
+     
+        private void grid_pc_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            grid_pc.ClearSelection();
+            if (mode != Mode.PlayUser) return; //если не наш ход
+            Статус status=sea_pc.Выстрел(new Точка(e.ColumnIndex, e.RowIndex));           
+            switch (status)
+            {
+                case Статус.неизвестно:                   
+                case Статус.мимо:       mode = Mode.PlayComp;
+                                        break;
+                case Статус.ранил:                    
+                case Статус.убил:
+                                        mode = Mode.PlayUser;
+                                        break;
+                case Статус.победил:    mode = Mode.Finish; WinUser();
+                                        break;               
+            }
+         //   while (mode == Mode.PlayComp) CompFight(); //стреляет комп           
+        }
+
+        private void CompFight()
+        {
+            Точка point;
+            Статус status=mission.Fight(out point);
+            switch (status)
+            {
+                case Статус.неизвестно:
+                case Статус.мимо:
+                    mode = Mode.PlayUser;
+                    break;
+                case Статус.ранил:
+                case Статус.убил:
+                    mode = Mode.PlayComp;
+                    break;
+                case Статус.победил:
+                    mode = Mode.Finish; WinComp();
+                    break;
+            }
+        }
+
+        private void WinUser()
+        {
+            MessageBox.Show("Победа! Ты затопил корабли компьютера.");
+        }
+
+        private void WinComp()
+        {
+            MessageBox.Show("Победа компьютера!");
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (mode == Mode.PlayComp) CompFight();
         }
     }
 }
